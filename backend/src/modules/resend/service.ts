@@ -13,19 +13,34 @@ import {
 } from "resend";
 import type React from "react"
 import { orderPlacedEmail } from "./emails/order-placed";
+import { orderPlacedAdminEmail } from "./emails/order-placed-admin";
 import { userInvitedEmail } from "./emails/user-invited";
 import { passwordResetEmail } from "./emails/password-reset";
+import { orderCanceledEmail } from "./emails/order-canceled";
+import { orderFulfillmentCreatedEmail } from "./emails/order-fulfillment-created";
+import { orderShippedEmail } from "./emails/order-shipped";
+import { orderDeliveredEmail } from "./emails/order-delivered";
 
 enum Templates {
   ORDER_PLACED = "order-placed",
+  ORDER_PLACED_ADMIN = "order-placed-admin",
   USER_INVITED = "user-invited",
   PASSWORD_RESET = "password-reset",
+  ORDER_CANCELED = "order-canceled",
+  ORDER_FULFILLMENT_CREATED = "order-fulfillment-created",
+  ORDER_SHIPPED = "order-shipped",
+  ORDER_DELIVERED = "order-delivered",
 }
 
 const templates: {[key in Templates]?: (props: unknown) => React.ReactNode} = {
   [Templates.ORDER_PLACED]: orderPlacedEmail,
+  [Templates.ORDER_PLACED_ADMIN]: orderPlacedAdminEmail,
   [Templates.USER_INVITED]: userInvitedEmail,
-  [Templates.PASSWORD_RESET]: passwordResetEmail
+  [Templates.PASSWORD_RESET]: passwordResetEmail,
+  [Templates.ORDER_CANCELED]: orderCanceledEmail,
+  [Templates.ORDER_FULFILLMENT_CREATED]: orderFulfillmentCreatedEmail,
+  [Templates.ORDER_SHIPPED]: orderShippedEmail,
+  [Templates.ORDER_DELIVERED]: orderDeliveredEmail,
 }
 
 type ResendOptions = {
@@ -93,10 +108,20 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     switch(template) {
       case Templates.ORDER_PLACED:
         return "Order Confirmation"
+      case Templates.ORDER_PLACED_ADMIN:
+        return "New Order Received"
       case Templates.USER_INVITED:
         return "You're Invited!"
       case Templates.PASSWORD_RESET:
         return "Reset Your Password"
+      case Templates.ORDER_CANCELED:
+        return "Order Canceled"
+      case Templates.ORDER_FULFILLMENT_CREATED:
+        return "Your Order Is Being Prepared"
+      case Templates.ORDER_SHIPPED:
+        return "Your Order Has Shipped"
+      case Templates.ORDER_DELIVERED:
+        return "Order Delivered"
       default:
         return "New Email"
     }
