@@ -17,10 +17,28 @@ export default async function resetPasswordTokenHandler({
   )
   const config = container.resolve("configModule")
 
+  const normalizeUrl = (url?: string) => {
+    if (!url) return undefined
+    return url.endsWith("/") ? url.slice(0, -1) : url
+  }
+
+  const getStorefrontUrl = () => {
+    const cors = config.projectConfig?.http?.storeCors || config.projectConfig?.storeCors
+    if (cors) {
+      const entries = Array.isArray(cors)
+        ? cors
+        : (cors as string).split(",").map((c) => c.trim()).filter(Boolean)
+      if (entries.length) {
+        return normalizeUrl(entries[0])
+      }
+    }
+    return normalizeUrl(config.admin.storefrontUrl)
+  }
+
   let urlPrefix = ""
 
   if (actor_type === "customer") {
-    urlPrefix = config.admin.storefrontUrl || "https://storefront.com"
+    urlPrefix = getStorefrontUrl() || "https://storefront.com"
   } else {
     const backendUrl = config.admin.backendUrl !== "/" ? config.admin.backendUrl :
       "http://localhost:9000"

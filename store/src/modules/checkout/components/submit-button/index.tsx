@@ -8,11 +8,13 @@ export function SubmitButton({
   children,
   variant = "primary",
   className,
+  disabled = false,
   "data-testid": dataTestId,
 }: {
   children: React.ReactNode
   variant?: "primary" | "secondary" | "transparent" | "danger" | null
   className?: string
+  disabled?: boolean
   "data-testid"?: string
 }) {
   const { pending } = useFormStatus()
@@ -24,6 +26,7 @@ export function SubmitButton({
       type="submit"
       isLoading={pending}
       variant={variant || "primary"}
+      disabled={disabled || pending}
       data-testid={dataTestId}
     >
       {children}

@@ -127,6 +127,94 @@ export async function login(_currentState: unknown, formData: FormData) {
   }
 }
 
+export const requestPasswordReset = async (
+  _currentState: { success: boolean; error: string | null },
+  formData: FormData
+): Promise<{ success: boolean; error: string | null }> => {
+  const email =
+    ((formData.get("email") as string | null)?.trim().toLowerCase()) || ""
+
+  if (!email) {
+    return { success: false, error: "Please enter the email on your account." }
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: email,
+    })
+
+    return { success: true, error: null }
+  } catch (error: any) {
+    return {
+      success: false,
+      error:
+        error?.message ||
+        "We couldn't request a password reset right now. Please try again.",
+    }
+  }
+}
+
+export const resetPasswordWithToken = async (
+  _currentState: { success: boolean; error: string | null },
+  formData: FormData
+): Promise<{ success: boolean; error: string | null }> => {
+  const token = (formData.get("token") as string | null)?.trim()
+  const email =
+    ((formData.get("email") as string | null)?.trim().toLowerCase()) || ""
+  const password = (formData.get("password") as string | null) || ""
+  const confirmPassword =
+    (formData.get("confirm_password") as string | null) || ""
+
+  if (!token) {
+    return {
+      success: false,
+      error:
+        "The reset link is missing a token. Request a new email to try again.",
+    }
+  }
+
+  if (!email) {
+    return {
+      success: false,
+      error:
+        "We couldn't find an email on this link. Open the reset link from your email again.",
+    }
+  }
+
+  if (!password || !confirmPassword) {
+    return {
+      success: false,
+      error: "Enter and confirm your new password to continue.",
+    }
+  }
+
+  if (password !== confirmPassword) {
+    return { success: false, error: "Passwords do not match." }
+  }
+
+  try {
+    await sdk.client.fetch(`/auth/customer/emailpass/update`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: {
+        email,
+        password,
+      },
+    })
+
+    return { success: true, error: null }
+  } catch (error: any) {
+    return {
+      success: false,
+      error:
+        error?.message ||
+        "We couldn't reset your password. Request a new link and try again.",
+    }
+  }
+}
+
 export async function signout(countryCode: string) {
   await sdk.auth.logout()
 
