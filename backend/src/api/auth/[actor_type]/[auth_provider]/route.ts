@@ -7,9 +7,6 @@ import {
   remoteQueryObjectFromString,
 } from "@medusajs/framework/utils"
 
-// Debug startup confirmation
-console.info("[custom-auth-route] loaded /auth/:actor_type/:auth_provider")
-
 const isCustomerEmailPass = (actorType?: string, provider?: string) =>
   actorType === "customer" && provider === "emailpass"
 
@@ -49,12 +46,6 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { actor_type, auth_provider } = req.params
   const config = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE)
   const service = req.scope.resolve(Modules.AUTH)
-
-  console.info(
-    `[custom-auth-route] request actor=${actor_type} provider=${auth_provider} body_keys=${Object.keys(
-      req.body || {}
-    ).join(",")}`
-  )
 
   // Pre-check: block unverified customers by email before authenticating
   if (

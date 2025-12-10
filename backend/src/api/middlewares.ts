@@ -10,8 +10,6 @@ import {
   remoteQueryObjectFromString,
 } from "@medusajs/framework/utils"
 
-console.info("[middlewares] loaded")
-
 async function enforceCustomerVerification(
   req: MedusaRequest,
   res: MedusaResponse,
