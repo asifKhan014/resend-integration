@@ -61,8 +61,9 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 
 export async function signup(_currentState: unknown, formData: FormData) {
   const password = formData.get("password") as string
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const customerForm = {
-    email: formData.get("email") as string,
+    email,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
@@ -74,49 +75,66 @@ export async function signup(_currentState: unknown, formData: FormData) {
       password: password,
     })
 
-    await setAuthToken(token as string)
-
-    const headers = {
-      ...(await getAuthHeaders()),
+    const authHeader = {
+      authorization: `Bearer ${token}`,
     }
 
-    const { customer: createdCustomer } = await sdk.store.customer.create(
-      customerForm,
+    await sdk.store.customer.create(
+      {
+        ...customerForm,
+        metadata: {
+          email_verification_required: true,
+          email_verified: false,
+        },
+      },
       {},
-      headers
+      authHeader
     )
 
-    const loginToken = await sdk.auth.login("customer", "emailpass", {
-      email: customerForm.email,
-      password,
-    })
+    // Fire-and-forget; this route responds 200 even if email doesn't exist.
+    try {
+      await sdk.client.fetch(`/store/customers/send-verification`, {
+        method: "POST",
+        headers: {
+          ...authHeader,
+          "content-type": "application/json",
+        },
+        body: {
+          email: customerForm.email,
+        },
+      })
+    } catch (e) {
+      // ignore, user can request another email from the verify page
+    }
 
-    await setAuthToken(loginToken as string)
+    await removeAuthToken()
 
-    const customerCacheTag = await getCacheTag("customers")
-    revalidateTag(customerCacheTag)
-
-    await transferCart()
-
-    return createdCustomer
+    return { success: true, error: null }
   } catch (error: any) {
-    return error.toString()
+    return { success: false, error: error.toString() }
   }
 }
 
 export async function login(_currentState: unknown, formData: FormData) {
-  const email = formData.get("email") as string
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
   const password = formData.get("password") as string
 
   try {
-    await sdk.auth
-      .login("customer", "emailpass", { email, password })
-      .then(async (token) => {
-        await setAuthToken(token as string)
-        const customerCacheTag = await getCacheTag("customers")
-        revalidateTag(customerCacheTag)
-      })
+    const { token } = await sdk.client.fetch<{ token: string }>(
+      "/store/customers/login",
+      {
+        method: "POST",
+        body: { email, password },
+      }
+    )
+
+    await setAuthToken(token as string)
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
   } catch (error: any) {
+    if (error?.response?.data?.message) {
+      return error.response.data.message
+    }
     return error.toString()
   }
 

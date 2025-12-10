@@ -13,7 +13,13 @@ type Props = {
 }
 
 const Register = ({ setCurrentView }: Props) => {
-  const [message, formAction] = useActionState(signup, null)
+  const [state, formAction] = useActionState(
+    signup,
+    {
+      success: false,
+      error: null as string | null,
+    }
+  )
 
   return (
     <div
@@ -67,7 +73,12 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
-        <ErrorMessage error={message} data-testid="register-error" />
+        <ErrorMessage error={state.error} data-testid="register-error" />
+        {state.success && (
+          <span className="text-center text-emerald-600 text-small-regular mt-4">
+            Check your email for a verification link before signing in.
+          </span>
+        )}
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Medusa Store&apos;s{" "}
           <LocalizedClientLink

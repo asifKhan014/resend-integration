@@ -16,6 +16,7 @@ import { orderPlacedEmail } from "./emails/order-placed";
 import { orderPlacedAdminEmail } from "./emails/order-placed-admin";
 import { userInvitedEmail } from "./emails/user-invited";
 import { passwordResetEmail } from "./emails/password-reset";
+import { emailVerificationEmail } from "./emails/email-verification";
 import { orderCanceledEmail } from "./emails/order-canceled";
 import { orderFulfillmentCreatedEmail } from "./emails/order-fulfillment-created";
 import { orderShippedEmail } from "./emails/order-shipped";
@@ -26,6 +27,7 @@ enum Templates {
   ORDER_PLACED_ADMIN = "order-placed-admin",
   USER_INVITED = "user-invited",
   PASSWORD_RESET = "password-reset",
+  EMAIL_VERIFICATION = "email-verification",
   ORDER_CANCELED = "order-canceled",
   ORDER_FULFILLMENT_CREATED = "order-fulfillment-created",
   ORDER_SHIPPED = "order-shipped",
@@ -37,6 +39,7 @@ const templates: {[key in Templates]?: (props: unknown) => React.ReactNode} = {
   [Templates.ORDER_PLACED_ADMIN]: orderPlacedAdminEmail,
   [Templates.USER_INVITED]: userInvitedEmail,
   [Templates.PASSWORD_RESET]: passwordResetEmail,
+  [Templates.EMAIL_VERIFICATION]: emailVerificationEmail,
   [Templates.ORDER_CANCELED]: orderCanceledEmail,
   [Templates.ORDER_FULFILLMENT_CREATED]: orderFulfillmentCreatedEmail,
   [Templates.ORDER_SHIPPED]: orderShippedEmail,
@@ -114,6 +117,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
         return "You're Invited!"
       case Templates.PASSWORD_RESET:
         return "Reset Your Password"
+      case Templates.EMAIL_VERIFICATION:
+        return "Verify Your Email"
       case Templates.ORDER_CANCELED:
         return "Order Canceled"
       case Templates.ORDER_FULFILLMENT_CREATED:
